@@ -4,14 +4,26 @@ import { PrismaClient } from '@prisma/client';
 const router = Router();
 const prisma = new PrismaClient();
 
-// GET /vehicles (liste avec filtres optionnels)
+// ============================================
+// GET /vehicles (liste avec filtres intelligents)
+// ============================================
 router.get('/', async (req, res) => {
   try {
     const { type, status } = req.query;
     
     const where: any = {};
-    if (type) where.type = type as string;
     if (status) where.status = status as string;
+
+    if (type) {
+      const typeValue = type as string;
+      if (typeValue === 'ACHAT') {
+        where.type = { in: ['ACHAT', 'LES_DEUX'] };
+      } else if (typeValue === 'LOCATION') {
+        where.type = { in: ['LOCATION', 'LES_DEUX'] };
+      } else {
+        where.type = typeValue;
+      }
+    }
 
     const vehicles = await prisma.vehicle.findMany({
       where,
@@ -25,7 +37,9 @@ router.get('/', async (req, res) => {
   }
 });
 
-// GET /vehicles/:id (détail d'un véhicule)
+// ============================================
+// GET /vehicles/:id (détail)
+// ============================================
 router.get('/:id', async (req, res) => {
   try {
     const vehicle = await prisma.vehicle.findUnique({
@@ -40,7 +54,9 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// ============================================
 // POST /vehicles (création - admin)
+// ============================================
 router.post('/', async (req, res) => {
   try {
     const vehicle = await prisma.vehicle.create({
@@ -50,10 +66,12 @@ router.post('/', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
-  } 
+  }
 });
 
+// ============================================
 // DELETE /vehicles/:id (suppression - admin)
+// ============================================
 router.delete('/:id', async (req, res) => {
   try {
     await prisma.vehicle.delete({ where: { id: req.params.id } });
@@ -63,7 +81,9 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
+// ============================================
 // PATCH /vehicles/:id/bascule (changement de statut - admin)
+// ============================================
 router.patch('/:id/bascule', async (req, res) => {
   try {
     const { status } = req.body;
