@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config';
+import path from 'path';
 
 // Import des routeurs (on les créera juste après)
 import authRoutes from './routes/auth';
@@ -37,8 +38,13 @@ app.use(express.urlencoded({ extended: true }));
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+// Servir les fichiers uploadés (images véhicules, documents...)
+app.use('/uploads', (req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  next();
+}, express.static(path.join(__dirname, '../uploads')));
 
-// Montage des routes (chaque fichier gère son préfixe d'URL)
+
 app.use('/auth', authRoutes);        // POST /auth/login, /auth/register
 app.use('/vehicles', vehicleRoutes); // GET /vehicles, POST /vehicles, etc.
 app.use('/dossiers', dossierRoutes); // GET /dossiers/mine, POST /dossiers
