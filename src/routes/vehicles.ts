@@ -46,13 +46,74 @@ router.get('/', async (req, res) => {
 });
 
 // GET /vehicles/:id
-router.get('/:id', async (req, res) => {
+// GET /vehicles (liste avec filtres intelligents et recherche multi-critères)
+router.get('/', async (req, res) => {
   try {
-    const v = await prisma.vehicle.findUnique({ where: { id: req.params.id as string } });
-    if (!v) return res.status(404).json({ message: 'Introuvable' });
-    res.json(v);
-  } catch (error) { res.status(500).json({ message: 'Erreur serveur' }); }
+    const { brand, model, minPrice, maxPrice, maxMileage, type, status } = req.query;
+    
+    const where: any = {};
+
+    // Filtre statut stock
+    if (status) where.status = status as string;
+
+    // Filtre type d'offre (ACHAT, LOCATION, LES_DEUX)
+    if (type) {
+      const typeValue = type as string;
+      if (typeValue === 'ACHAT') {
+        where.type = { in: ['ACHAT', 'LES_DEUX'] };
+      } else if (typeValue === 'LOCATION') {
+        where.type = { in: ['LOCATION', 'LES_DEUX'] };
+      } else {
+        where.type = typeValue;
+      }
+    }
+
+    // Validation fourchettes
+    if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
+      return res.status(400).json({ message: 'Fourchette de prix incohérente (min > max)' });
+    }
+    if (minPrice && Number(minPrice) < 0) {
+      return res.status(400).json({ message: 'Le prix minimum ne peut pas être négatif' });
+    }
+    if (maxPrice && Number(maxPrice) < 0) {
+      return res.status(400).json({ message: 'Le prix maximum ne peut pas être négatif' });
+    }
+    if (maxMileage && Number(maxMileage) < 0) {
+      return res.status(400).json({ message: 'Le kilométrage ne peut pas être négatif' });
+    }
+
+    // Recherche texte (insensible à la casse)
+    if (brand) {
+      where.brand = { contains: brand as string, mode: 'insensitive' };
+    }
+    if (model) {
+      where.model = { contains: model as string, mode: 'insensitive' };
+    }
+
+    // Fourchette de prix
+    if (minPrice || maxPrice) {
+      where.price = {};
+      if (minPrice) where.price.gte = Number(minPrice);
+      if (maxPrice) where.price.lte = Number(maxPrice);
+    }
+
+    // Kilométrage max
+    if (maxMileage) {
+      where.mileage = { lte: Number(maxMileage) };
+    }
+
+    const vehicles = await prisma.vehicle.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(vehicles);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Erreur serveur' });
+  }
 });
+
 
 // POST /vehicles — AVEC upload fichier
 router.post('/', upload.single('image'), async (req, res) => {
