@@ -3,8 +3,10 @@ import cors from 'cors';
 import helmet from 'helmet';
 import { config } from './config';
 import path from 'path';
+import multer from 'multer';
+import appointmentRoutes from './routes/appointments';
 
-// Import des routeurs (on les créera juste après)
+// Import des routeurs
 import authRoutes from './routes/auth';
 import vehicleRoutes from './routes/vehicles';
 import dossierRoutes from './routes/dossiers';
@@ -14,47 +16,55 @@ import adminRoutes from './routes/admin';
 const app = express();
 
 // ============================================
-// MIDDLEWARES (traitement des requêtes)
+// MIDDLEWARES GLOBAUX
 // ============================================
-
-// Helmet : ajoute des headers de sécurité (X-Content-Type-Options, etc.)
 app.use(helmet());
-
-// CORS : autorise le frontend à nous parler (sinon le navigateur bloque)
 app.use(cors({
   origin: config.FRONTEND_URL,
   credentials: true,
 }));
-
-// express.json() : permet de lire le body JSON des requêtes POST/PATCH
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ============================================
-// ROUTES (les endpoints de l'API)
-// ============================================
+// Servir les fichiers uploadés (proxy local)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// Health check : pour vérifier que le serveur répond
+// ============================================
+// ROUTES
+// ============================================
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
-// Servir les fichiers uploadés (images véhicules, documents...)
-app.use('/uploads', (req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+
+app.use('/auth', authRoutes);
+app.use('/vehicles', vehicleRoutes);
+app.use('/dossiers', dossierRoutes);
+app.use('/documents', documentRoutes);
+app.use('/admin', adminRoutes);
+app.use('/appointments', appointmentRoutes);
+
+
+// =============================================
+// GESTION GLOBALE DES ERREURS (Multer, etc.)
+// =============================================
+// ⚠️ OBLIGATOIREMENT APRÈS TOUTES LES ROUTES
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  if (err instanceof multer.MulterError) {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'Fichier trop volumineux (max 10 Mo)' });
+    }
+    return res.status(400).json({ message: err.message });
+  }
+  if (err) {
+    console.error('❌ ERREUR GLOBALE:', err);
+    return res.status(500).json({ message: err.message || 'Erreur serveur' });
+  }
   next();
-}, express.static(path.join(__dirname, '../uploads')));
-
-
-app.use('/auth', authRoutes);        // POST /auth/login, /auth/register
-app.use('/vehicles', vehicleRoutes); // GET /vehicles, POST /vehicles, etc.
-app.use('/dossiers', dossierRoutes); // GET /dossiers/mine, POST /dossiers
-app.use('/documents', documentRoutes); // POST /documents (upload)
-app.use('/admin', adminRoutes);      // GET /admin/dossiers, PATCH /admin/dossiers/:id/status
+});
 
 // ============================================
-// DÉMARRAGE DU SERVEUR
+// DÉMARRAGE
 // ============================================
-
 const PORT = config.PORT;
 app.listen(PORT, () => {
   console.log(`🚀 Serveur M-Motors démarré sur http://localhost:${PORT}`);

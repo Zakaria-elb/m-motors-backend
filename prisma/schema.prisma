@@ -55,6 +55,7 @@ model User {
 
   dossiers     Dossier[]
   histories    DossierHistory[]
+  appointments Appointment[] 
 
   @@map("users")
 }
@@ -76,6 +77,7 @@ model Vehicle {
   updatedAt    DateTime      @updatedAt @map("updated_at")
 
   dossiers     Dossier[]
+  appointments Appointment[] 
 
   @@map("vehicles")
 }
@@ -126,5 +128,29 @@ model DossierHistory {
   dossier     Dossier       @relation(fields: [dossierId], references: [id])
   user        User          @relation(fields: [changedBy], references: [id])
 
-  @@map("dossier_history")
+   @@map("dossier_history")
 }
+model Appointment {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  vehicleId String   @map("vehicle_id")
+  dateTime  DateTime @map("date_time")
+  status    AppointmentStatus @default(EN_ATTENTE)
+  comment   String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id])
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id])
+
+  @@map("appointments")
+}
+
+enum AppointmentStatus {
+  EN_ATTENTE
+  CONFIRME
+  ANNULE
+  TERMINE
+}
+
+
