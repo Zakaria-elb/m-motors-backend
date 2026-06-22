@@ -65,7 +65,14 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 // ============================================
 // DÉMARRAGE
 // ============================================
+
 const PORT = config.PORT;
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur M-Motors démarré sur http://localhost:${PORT}`);
-});
+
+// On ne démarre le serveur que si on n'est pas en mode test
+if (process.env.NODE_ENV !== 'test') {
+  app.listen(PORT, () => {
+    console.log(`🚀 Serveur M-Motors démarré sur http://localhost:${PORT}`);
+  });
+}
+
+export default app;

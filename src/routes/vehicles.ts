@@ -180,36 +180,25 @@ router.delete('/:id', async (req, res) => {
 router.patch('/:id/bascule', async (req, res) => {
   try {
     const { status, price, monthlyPrice } = req.body;
-
-    // Force le type selon le statut
     let forcedType: VehicleType;
     if (status === 'A_VENDRE' || status === 'VENDU') forcedType = 'ACHAT';
     else if (status === 'EN_LOCATION' || status === 'LOUE') forcedType = 'LOCATION';
     else forcedType = 'LES_DEUX';
 
-    const data: any = {
-      status: status as any,
-      type: forcedType,
-    };
-
-    // Mise à jour des prix si fournis
-    if (price !== undefined && price !== null && price !== '') {
-      data.price = Number(price);
-    }
-    if (monthlyPrice !== undefined && monthlyPrice !== null && monthlyPrice !== '') {
-      data.monthlyPrice = Number(monthlyPrice);
-    }
+    const data: any = { status: status as any, type: forcedType };
+    if (price !== undefined && price !== null && price !== '') data.price = Number(price);
+    if (monthlyPrice !== undefined && monthlyPrice !== null && monthlyPrice !== '') data.monthlyPrice = Number(monthlyPrice);
 
     const vehicle = await prisma.vehicle.update({
       where: { id: req.params.id as string },
       data,
     });
-
     res.json(vehicle);
-  } catch (error: any) {
-    console.error('❌ ERREUR PATCH bascule:', error.message);
+  } catch (error) {
+    console.error('Erreur PATCH bascule:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
+
 
 export default router;

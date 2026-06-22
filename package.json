@@ -3,12 +3,13 @@
   "version": "1.0.0",
   "description": "NestJS API - M-Motors",
   "main": "index.js",
-    "scripts": {
-    "dev": "ts-node src/app.ts",
-    "build": "tsc",
-    "start": "node dist/app.js",
-    "test": "jest --coverage"
-  },
+ "scripts": {
+  "dev": "ts-node src/app.ts",
+  "build": "tsc",
+  "start": "node dist/app.js",
+  "test": "NODE_ENV=test dotenv -e .env.test -- jest --coverage --runInBand",
+  "test:watch": "NODE_ENV=test dotenv -e .env.test -- jest --watch"
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Zakaria-elb/m-motors-backend.git"
@@ -42,10 +43,11 @@
     "@types/multer": "^2.1.0",
     "@types/node": "^25.9.1",
     "@types/supertest": "^7.2.0",
+    "dotenv-cli": "^11.0.0",
     "jest": "^30.4.2",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2",
-    "ts-jest": "^29.4.10",
+    "ts-jest": "^29.4.11",
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   }
