@@ -11,20 +11,20 @@ const client_1 = require("@prisma/client");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// ============================================
+
 // POST /auth/register
-// ============================================
+
 router.post('/register', async (req, res) => {
     try {
         const { email, password, firstName, lastName } = req.body;
-        // Vérifie si l'email existe déjà
+        // Vérif si l'email existe déjà
         const existing = await prisma.user.findUnique({ where: { email } });
         if (existing) {
             return res.status(400).json({ message: 'Email déjà utilisé' });
         }
-        // Hash du mot de passe (10 rounds = sécurisé mais rapide)
+        // Hash du mdp
         const passwordHash = await bcrypt_1.default.hash(password, 10);
-        // Création dans la base
+        // Création 
         const user = await prisma.user.create({
             data: { email, passwordHash, firstName, lastName },
         });
@@ -46,9 +46,9 @@ router.post('/register', async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// ============================================
+
 // POST /auth/login
-// ============================================
+
 router.post('/login', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -77,9 +77,9 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// ============================================
-// GET /users/me (protégé par JWT)
-// ============================================
+
+// GET /users/me 
+
 router.get('/me', auth_1.authenticateToken, async (req, res) => {
     try {
         const user = await prisma.user.findUnique({

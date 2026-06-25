@@ -5,7 +5,7 @@ import { authenticateToken, requireRole, AuthenticatedRequest } from '../middlew
 const router = Router();
 const prisma = new PrismaClient();
 
-// GET /admin/dossiers (liste pour admin, avec filtres)
+// GET /admin/dossiers
 router.get('/dossiers', authenticateToken, requireRole('ADMIN'), async (req, res) => {
   try {
     const { status } = req.query;
@@ -28,13 +28,13 @@ router.get('/dossiers', authenticateToken, requireRole('ADMIN'), async (req, res
   }
 });
 
-// PATCH /admin/dossiers/:id/status (valider / refuser / signer)
-// PATCH /admin/dossiers/:id/status (valider / refuser / signer)
+
+// PATCH /admin/dossiers/status 
 router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res) => {
   try {
     const { status, comment } = req.body;
 
-    // 1. Récupérer l'ancien statut AVANT modification
+    // Récupérer  statut 
     const oldDossier = await prisma.dossier.findUnique({
       where: { id: req.params.id as string },
       include: { user: { select: { email: true, firstName: true, lastName: true } }, vehicle: true }
@@ -45,7 +45,7 @@ router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), as
     const oldStatus = oldDossier.status;
     const newStatus = status as string;
 
-    // 2. Mise à jour du dossier
+    // Màj  du dossier
     const updated = await prisma.dossier.update({
       where: { id: req.params.id as string },
       data: {
@@ -54,7 +54,7 @@ router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), as
       },
     });
 
-    // 3. Historique de la décision
+    // Historiquede 
     await prisma.dossierHistory.create({
       data: {
         dossierId: updated.id,
@@ -65,10 +65,10 @@ router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), as
       },
     });
 
-    // 4. Simulation envoi notification email (visible console + logique métier)
+    // Simulation envoi notification 
     console.log(`📧 [NOTIFICATION EMAIL] À: ${oldDossier.user.email} | Dossier ${updated.id} passé de ${oldStatus} → ${newStatus} | Commentaire: ${comment || 'Aucun'}`);
 
-    // 5. Retourner le dossier enrichi pour le frontend admin
+    // Retourner le dossier 
     res.json({
       ...updated,
       vehicle: oldDossier.vehicle,

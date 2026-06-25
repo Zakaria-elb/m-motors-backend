@@ -17,9 +17,9 @@ const dossiers_1 = __importDefault(require("./routes/dossiers"));
 const documents_1 = __importDefault(require("./routes/documents"));
 const admin_1 = __importDefault(require("./routes/admin"));
 const app = (0, express_1.default)();
-// ============================================
-// MIDDLEWARES GLOBAUX
-// ============================================
+
+// MIDDLEWARES 
+
 app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)({
     origin: config_1.config.FRONTEND_URL,
@@ -27,11 +27,11 @@ app.use((0, cors_1.default)({
 }));
 app.use(express_1.default.json());
 app.use(express_1.default.urlencoded({ extended: true }));
-// Servir les fichiers uploadés (proxy local)
+
 app.use('/uploads', express_1.default.static(path_1.default.join(__dirname, '../uploads')));
-// ============================================
+
 // ROUTES
-// ============================================
+
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -41,10 +41,10 @@ app.use('/dossiers', dossiers_1.default);
 app.use('/documents', documents_1.default);
 app.use('/admin', admin_1.default);
 app.use('/appointments', appointments_1.default);
-// =============================================
-// GESTION GLOBALE DES ERREURS (Multer, etc.)
-// =============================================
-// ⚠️ OBLIGATOIREMENT APRÈS TOUTES LES ROUTES
+
+// GESTION GLOBALE DES ERREURS 
+
+
 app.use((err, req, res, next) => {
     if (err instanceof multer_1.default.MulterError) {
         if (err.code === 'LIMIT_FILE_SIZE') {
@@ -58,9 +58,9 @@ app.use((err, req, res, next) => {
     }
     next();
 });
-// ============================================
+
 // DÉMARRAGE
-// ============================================
+
 const PORT = config_1.config.PORT;
 app.listen(PORT, () => {
     console.log(`🚀 Serveur M-Motors démarré sur http://localhost:${PORT}`);

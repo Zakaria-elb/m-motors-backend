@@ -8,9 +8,9 @@ import { authenticateToken, AuthenticatedRequest } from '../middleware/auth';
 const router = Router();
 const prisma = new PrismaClient();
 
-// ============================================
-// POST /auth/register
-// ============================================
+
+// POST /auth/log up
+
 router.post('/register', async (req, res) => {
   try {
     const { email, password, firstName, lastName } = req.body;
@@ -21,10 +21,10 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'Email déjà utilisé' });
     }
 
-    // Hash du mot de passe (10 rounds = sécurisé mais rapide)
+    // Hash du mot de passe 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    // Création dans la base
+    // Création dans BDD
     const user = await prisma.user.create({
       data: { email, passwordHash, firstName, lastName },
     });
@@ -52,9 +52,9 @@ router.post('/register', async (req, res) => {
   }
 });
 
-// ============================================
+
 // POST /auth/login
-// ============================================
+
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -91,9 +91,9 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// ============================================
-// GET /users/me (protégé par JWT)
-// ============================================
+
+// GET /users/me 
+
 router.get('/me', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const user = await prisma.user.findUnique({

@@ -15,9 +15,9 @@ import adminRoutes from './routes/admin';
 
 const app = express();
 
-// ============================================
-// MIDDLEWARES GLOBAUX
-// ============================================
+
+// MIDDLEWARES 
+
 app.use(helmet());
 app.use(cors({
   origin: config.FRONTEND_URL,
@@ -26,12 +26,12 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir les fichiers uploadés (proxy local)
+//  fichiers uploadés 
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
-// ============================================
+
 // ROUTES
-// ============================================
+
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -44,10 +44,9 @@ app.use('/admin', adminRoutes);
 app.use('/appointments', appointmentRoutes);
 
 
-// =============================================
-// GESTION GLOBALE DES ERREURS (Multer, etc.)
-// =============================================
-// ⚠️ OBLIGATOIREMENT APRÈS TOUTES LES ROUTES
+
+// GESTION GLOBALE  ERREURS 
+
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
@@ -62,13 +61,13 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   next();
 });
 
-// ============================================
+
 // DÉMARRAGE
-// ============================================
+
 
 const PORT = config.PORT;
 
-// On ne démarre le serveur que si on n'est pas en mode test
+
 if (process.env.NODE_ENV !== 'test') {
   app.listen(PORT, () => {
     console.log(`🚀 Serveur M-Motors démarré sur http://localhost:${PORT}`);

@@ -10,9 +10,9 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// ============================================
-// CONFIGURATION MULTER (upload images)
-// ============================================
+
+// CONFIG upload images
+
 const uploadDir = path_1.default.join(__dirname, '../../uploads/vehicles');
 if (!fs_1.default.existsSync(uploadDir)) {
     fs_1.default.mkdirSync(uploadDir, { recursive: true });
@@ -34,19 +34,19 @@ const upload = (0, multer_1.default)({
             cb(new Error('Fichier image uniquement (JPG, PNG, WEBP)'));
     }
 });
-// ============================================
-// GET /vehicles (RECHERCHE MULTI-CRITÈRES)
-// ============================================
+
+// recherche multicritères
+
 router.get('/', async (req, res) => {
     try {
         const { brand, model, minPrice, maxPrice, maxMileage, type, status } = req.query;
         console.log('🔥 REQ.QUERY:', req.query);
         const where = {};
-        // Filtre statut stock (A_VENDRE, EN_LOCATION, LES_DEUX...)
+        // Filtre statut 
         if (status) {
             where.status = status;
         }
-        // Filtre type d'offre (ACHAT / LOCATION / LES_DEUX)
+        // Filtre type d'offre 
         if (type && type !== 'ALL') {
             const typeValue = type;
             if (typeValue === 'ACHAT') {
@@ -59,7 +59,7 @@ router.get('/', async (req, res) => {
                 where.type = typeValue;
             }
         }
-        // VALIDATION des fourchettes
+        // VALIDATION 
         if (minPrice && maxPrice && Number(minPrice) > Number(maxPrice)) {
             return res.status(400).json({ message: 'Fourchette de prix incohérente (min > max)' });
         }
@@ -72,14 +72,14 @@ router.get('/', async (req, res) => {
         if (maxMileage && Number(maxMileage) < 0) {
             return res.status(400).json({ message: 'Le kilométrage ne peut pas être négatif' });
         }
-        // Recherche texte (insensible à la casse — PostgreSQL/Prisma)
+        // Recherche texte 
         if (brand) {
             where.brand = { contains: brand, mode: 'insensitive' };
         }
         if (model) {
             where.model = { contains: model, mode: 'insensitive' };
         }
-        // Fourchette de prix
+        // fourchette prix
         if (minPrice || maxPrice) {
             where.price = {};
             if (minPrice)
@@ -87,7 +87,7 @@ router.get('/', async (req, res) => {
             if (maxPrice)
                 where.price.lte = Number(maxPrice);
         }
-        // Kilométrage max
+        // Kilométrage 
         if (maxMileage) {
             where.mileage = { lte: Number(maxMileage) };
         }
@@ -104,9 +104,9 @@ router.get('/', async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur', detail: error.message });
     }
 });
-// ============================================
-// GET /vehicles/:id (détail)
-// ============================================
+
+// GET /vehicles/:id 
+
 router.get('/:id', async (req, res) => {
     try {
         const vehicle = await prisma.vehicle.findUnique({
@@ -121,12 +121,12 @@ router.get('/:id', async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// ============================================
+
 // POST /vehicles (création + upload image)
-// ============================================
+
 router.post('/', upload.single('image'), async (req, res) => {
     try {
-        // URL relative pour le proxy Next.js (/uploads -> localhost:3001)
+        
         const imageUrl = req.file
             ? `/uploads/vehicles/${req.file.filename}`
             : undefined;
@@ -151,9 +151,9 @@ router.post('/', upload.single('image'), async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur', detail: error.message });
     }
 });
-// ============================================
+
 // DELETE /vehicles/:id
-// ============================================
+
 router.delete('/:id', async (req, res) => {
     try {
         await prisma.vehicle.delete({
@@ -165,9 +165,9 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// ============================================
-// PATCH /vehicles/:id/bascule (statut + type + prix dynamiques)
-// ============================================
+
+// PATCH /vehicles/:id/bascule 
+
 router.patch('/:id/bascule', async (req, res) => {
     try {
         const { status, price, monthlyPrice } = req.body;

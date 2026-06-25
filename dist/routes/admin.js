@@ -5,7 +5,7 @@ const client_1 = require("@prisma/client");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// GET /admin/dossiers (liste pour admin, avec filtres)
+// GET /admin/doss
 router.get('/dossiers', auth_1.authenticateToken, (0, auth_1.requireRole)('ADMIN'), async (req, res) => {
     try {
         const { status } = req.query;
@@ -26,12 +26,11 @@ router.get('/dossiers', auth_1.authenticateToken, (0, auth_1.requireRole)('ADMIN
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// PATCH /admin/dossiers/:id/status (valider / refuser / signer)
-// PATCH /admin/dossiers/:id/status (valider / refuser / signer)
+// PATCH /admin/doss/:id
 router.patch('/dossiers/:id/status', auth_1.authenticateToken, (0, auth_1.requireRole)('ADMIN'), async (req, res) => {
     try {
         const { status, comment } = req.body;
-        // 1. Récupérer l'ancien statut AVANT modification
+        // Récupérer statut actuel
         const oldDossier = await prisma.dossier.findUnique({
             where: { id: req.params.id },
             include: { user: { select: { email: true, firstName: true, lastName: true } }, vehicle: true }
@@ -40,7 +39,7 @@ router.patch('/dossiers/:id/status', auth_1.authenticateToken, (0, auth_1.requir
             return res.status(404).json({ message: 'Dossier introuvable' });
         const oldStatus = oldDossier.status;
         const newStatus = status;
-        // 2. Mise à jour du dossier
+        // Mise à jour du du status dossier
         const updated = await prisma.dossier.update({
             where: { id: req.params.id },
             data: {
@@ -48,7 +47,7 @@ router.patch('/dossiers/:id/status', auth_1.authenticateToken, (0, auth_1.requir
                 adminComment: comment || null,
             },
         });
-        // 3. Historique de la décision
+        // Historique 
         await prisma.dossierHistory.create({
             data: {
                 dossierId: updated.id,
@@ -58,9 +57,9 @@ router.patch('/dossiers/:id/status', auth_1.authenticateToken, (0, auth_1.requir
                 comment: comment || null,
             },
         });
-        // 4. Simulation envoi notification email (visible console + logique métier)
+        // Simulation envoi notification 
         console.log(`📧 [NOTIFICATION EMAIL] À: ${oldDossier.user.email} | Dossier ${updated.id} passé de ${oldStatus} → ${newStatus} | Commentaire: ${comment || 'Aucun'}`);
-        // 5. Retourner le dossier enrichi pour le frontend admin
+        
         res.json({
             ...updated,
             vehicle: oldDossier.vehicle,

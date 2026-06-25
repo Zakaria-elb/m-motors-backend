@@ -5,7 +5,7 @@ import { authenticateToken, requireRole, AuthenticatedRequest } from '../middlew
 const router = Router();
 const prisma = new PrismaClient();
 
-// POST /appointments (client réserve un essai)
+// POST /appointments 
 router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const { vehicleId, dateTime } = req.body;
@@ -16,7 +16,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
     const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
     if (!vehicle) return res.status(404).json({ message: 'Véhicule introuvable' });
 
-    // Vérifier pas de doublon exact même jour/heure même véhicule
+    // Vérifier pas de doublon 
     const existing = await prisma.appointment.findFirst({
       where: { vehicleId, dateTime: new Date(dateTime) },
     });
@@ -41,7 +41,7 @@ router.post('/', authenticateToken, async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// GET /appointments/mine (mes rendez-vous client)
+// GET /appointments/mine 
 router.get('/mine', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const appointments = await prisma.appointment.findMany({
@@ -55,7 +55,7 @@ router.get('/mine', authenticateToken, async (req: AuthenticatedRequest, res) =>
   }
 });
 
-// GET /admin/appointments (admin voit tous les rdv)
+// GET /admin/appointments 
 router.get('/admin', authenticateToken, requireRole('ADMIN'), async (req, res) => {
   try {
     const appointments = await prisma.appointment.findMany({
@@ -68,7 +68,7 @@ router.get('/admin', authenticateToken, requireRole('ADMIN'), async (req, res) =
   }
 });
 
-// PATCH /admin/appointments/:id/status (confirmer / annuler)
+// PATCH /admin/appointments
 router.patch('/admin/:id/status', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res) => {
   try {
     const { status, comment } = req.body;

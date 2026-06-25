@@ -5,13 +5,13 @@ const client_1 = require("@prisma/client");
 const auth_1 = require("../middleware/auth");
 const router = (0, express_1.Router)();
 const prisma = new client_1.PrismaClient();
-// ============================================
-// POST /dossiers (créer un dossier - CLIENT)
-// ============================================
+
+// POST /création dossiers 
+
 router.post('/', auth_1.authenticateToken, async (req, res) => {
     try {
         const { vehicleId, type } = req.body;
-        // req.user!.id = l'ID du client connecté (décodé du JWT)
+       
         const dossier = await prisma.dossier.create({
             data: {
                 userId: req.user.id,
@@ -27,16 +27,16 @@ router.post('/', auth_1.authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// ============================================
-// GET /dossiers/mine (mes dossiers - CLIENT)
-// ============================================
+
+// GET /dossiers/mes dossiers en tant que client
+
 router.get('/mine', auth_1.authenticateToken, async (req, res) => {
     try {
         const dossiers = await prisma.dossier.findMany({
             where: { userId: req.user.id },
             include: {
-                vehicle: true, // Jointure : on récupère aussi les infos du véhicule
-                documents: true, // et les documents uploadés
+                vehicle: true, 
+                documents: true, 
             },
             orderBy: { createdAt: 'desc' },
         });
@@ -46,9 +46,9 @@ router.get('/mine', auth_1.authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// ============================================
-// GET /dossiers/:id (suivi détail - CLIENT ou ADMIN)
-// ============================================
+
+// GET /dossiers/:id suivi 
+
 router.get('/:id', auth_1.authenticateToken, async (req, res) => {
     try {
         const dossier = await prisma.dossier.findUnique({
@@ -61,7 +61,7 @@ router.get('/:id', auth_1.authenticateToken, async (req, res) => {
         });
         if (!dossier)
             return res.status(404).json({ message: 'Dossier introuvable' });
-        // Sécurité : on ne peut voir que SON dossier, sauf si on est admin
+        // Sécurisation dossiers
         if (dossier.userId !== req.user.id && req.user.role !== 'ADMIN') {
             return res.status(403).json({ message: 'Accès refusé' });
         }
@@ -71,9 +71,9 @@ router.get('/:id', auth_1.authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-//
-// DELETE /dossiers/:id (suppression par le propriétaire uniquement)
-//
+
+// DELETE /dossiers/:id 
+
 router.delete('/:id', auth_1.authenticateToken, async (req, res) => {
     try {
         const dossier = await prisma.dossier.findUnique({

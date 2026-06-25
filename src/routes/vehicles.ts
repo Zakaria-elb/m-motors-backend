@@ -160,9 +160,9 @@ router.post('/', upload.single('image'), async (req, res) => {
   }
 });
 
-// ============================================
+
 // DELETE /vehicles/:id
-// ============================================
+
 router.delete('/:id', async (req, res) => {
   try {
     await prisma.vehicle.delete({
@@ -174,9 +174,8 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// ============================================
-// PATCH /vehicles/:id/bascule (statut + type + prix dynamiques)
-// ============================================
+
+// PATCH /vehicles/:id/bascule
 router.patch('/:id/bascule', async (req, res) => {
   try {
     const { status, price, monthlyPrice } = req.body;

@@ -7,7 +7,7 @@ exports.authenticateToken = authenticateToken;
 exports.requireRole = requireRole;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = require("../config");
-// Middleware 1 : vérifie le token JWT
+// Middleware 1 : vérif de  token JWT
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // "Bearer TOKEN" → on garde TOKEN
@@ -21,13 +21,13 @@ function authenticateToken(req, res, next) {
             email: decoded.email,
             role: decoded.role,
         };
-        next(); // Tout est bon, on passe à la suite (la route)
+        next(); 
     }
     catch (err) {
         return res.status(403).json({ message: 'Token invalide' });
     }
 }
-// Middleware 2 : vérifie le rôle (ex: ADMIN uniquement)
+// Middleware 2 : vérif le rôle ADMIN
 function requireRole(role) {
     return (req, res, next) => {
         if (!req.user) {

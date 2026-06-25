@@ -11,11 +11,11 @@ router.post('/', auth_1.authenticateToken, async (req, res) => {
         const { vehicleId, dateTime } = req.body;
         if (!dateTime)
             return res.status(400).json({ message: 'Date et heure obligatoires' });
-        // Vérifier que le véhicule existe
+        // check si le véhicule existe
         const vehicle = await prisma.vehicle.findUnique({ where: { id: vehicleId } });
         if (!vehicle)
             return res.status(404).json({ message: 'Véhicule introuvable' });
-        // Vérifier pas de doublon exact même jour/heure même véhicule
+        // Vérif pas de doublon 
         const existing = await prisma.appointment.findFirst({
             where: { vehicleId, dateTime: new Date(dateTime) },
         });
@@ -38,7 +38,7 @@ router.post('/', auth_1.authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// GET /appointments/mine (mes rendez-vous client)
+// GET /appointments/mine 
 router.get('/mine', auth_1.authenticateToken, async (req, res) => {
     try {
         const appointments = await prisma.appointment.findMany({
@@ -52,7 +52,7 @@ router.get('/mine', auth_1.authenticateToken, async (req, res) => {
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// GET /admin/appointments (admin voit tous les rdv)
+// GET /admin/appointments
 router.get('/admin', auth_1.authenticateToken, (0, auth_1.requireRole)('ADMIN'), async (req, res) => {
     try {
         const appointments = await prisma.appointment.findMany({
@@ -65,7 +65,7 @@ router.get('/admin', auth_1.authenticateToken, (0, auth_1.requireRole)('ADMIN'),
         res.status(500).json({ message: 'Erreur serveur' });
     }
 });
-// PATCH /admin/appointments/:id/status (confirmer / annuler)
+// PATCH /admin/appointments/:id/status
 router.patch('/admin/:id/status', auth_1.authenticateToken, (0, auth_1.requireRole)('ADMIN'), async (req, res) => {
     try {
         const { status, comment } = req.body;

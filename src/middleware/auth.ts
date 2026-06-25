@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from '../config';
 
-// Extension de l'objet Request d'Express pour ajouter "user"
+// Request d'Express pour add "user"
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
@@ -11,10 +11,10 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
-// Middleware 1 : vérifie le token JWT
+//  vérifie le token JWT
 export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // "Bearer TOKEN" → on garde TOKEN
+  const token = authHeader && authHeader.split(' ')[1]; 
 
   if (!token) {
     return res.status(401).json({ message: 'Token manquant' });
@@ -27,13 +27,13 @@ export function authenticateToken(req: AuthenticatedRequest, res: Response, next
       email: decoded.email,
       role: decoded.role,
     };
-    next(); // Tout est bon, on passe à la suite (la route)
+    next(); 
   } catch (err) {
     return res.status(403).json({ message: 'Token invalide' });
   }
 }
 
-// Middleware 2 : vérifie le rôle (ex: ADMIN uniquement)
+// vérif de rôle 
 export function requireRole(role: string) {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
     if (!req.user) {

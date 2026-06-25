@@ -74,9 +74,8 @@ router.get('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => 
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
-//
-// DELETE /dossiers/:id (suppression par le propriétaire uniquement)
-//
+
+// DELETE /dossiers
 router.delete('/:id', authenticateToken, async (req: AuthenticatedRequest, res) => {
   try {
     const dossier = await prisma.dossier.findUnique({

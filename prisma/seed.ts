@@ -26,7 +26,7 @@ async function main() {
     },
   });
 
-  // Créer quelques véhicules
+  // cerate cars
   await prisma.vehicle.createMany({
     data: [
       {

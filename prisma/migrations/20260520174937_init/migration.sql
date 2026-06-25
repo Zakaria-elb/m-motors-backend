@@ -1,16 +1,16 @@
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('CLIENT', 'ADMIN', 'COMMERCIAL');
 
--- CreateEnum
+
 CREATE TYPE "VehicleStatus" AS ENUM ('A_VENDRE', 'EN_LOCATION', 'LES_DEUX', 'VENDU', 'LOUE');
 
--- CreateEnum
+
 CREATE TYPE "VehicleType" AS ENUM ('ACHAT', 'LOCATION', 'LES_DEUX');
 
--- CreateEnum
+
 CREATE TYPE "DossierType" AS ENUM ('ACHAT', 'LOCATION');
 
--- CreateEnum
+
 CREATE TYPE "DossierStatus" AS ENUM ('BROUILLON', 'EN_ATTENTE', 'EN_REVISION', 'VALIDE', 'REFUSE', 'SIGNE');
 
 -- CreateTable
@@ -29,7 +29,7 @@ CREATE TABLE "users" (
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+
 CREATE TABLE "vehicles" (
     "id" TEXT NOT NULL,
     "brand" TEXT NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE "vehicles" (
     CONSTRAINT "vehicles_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+
 CREATE TABLE "dossiers" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -65,7 +65,7 @@ CREATE TABLE "dossiers" (
     CONSTRAINT "dossiers_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+
 CREATE TABLE "documents" (
     "id" TEXT NOT NULL,
     "dossier_id" TEXT NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE "documents" (
     CONSTRAINT "documents_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
+
 CREATE TABLE "dossier_history" (
     "id" TEXT NOT NULL,
     "dossier_id" TEXT NOT NULL,
@@ -91,23 +91,23 @@ CREATE TABLE "dossier_history" (
     CONSTRAINT "dossier_history_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
+
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
--- CreateIndex
+
 CREATE UNIQUE INDEX "documents_s3_key_key" ON "documents"("s3_key");
 
--- AddForeignKey
+
 ALTER TABLE "dossiers" ADD CONSTRAINT "dossiers_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
+
 ALTER TABLE "dossiers" ADD CONSTRAINT "dossiers_vehicle_id_fkey" FOREIGN KEY ("vehicle_id") REFERENCES "vehicles"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
+
 ALTER TABLE "documents" ADD CONSTRAINT "documents_dossier_id_fkey" FOREIGN KEY ("dossier_id") REFERENCES "dossiers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
--- AddForeignKey
+
 ALTER TABLE "dossier_history" ADD CONSTRAINT "dossier_history_dossier_id_fkey" FOREIGN KEY ("dossier_id") REFERENCES "dossiers"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- AddForeignKey
+
 ALTER TABLE "dossier_history" ADD CONSTRAINT "dossier_history_changed_by_fkey" FOREIGN KEY ("changed_by") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

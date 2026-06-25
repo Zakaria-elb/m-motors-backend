@@ -6,4 +6,3 @@ export declare const config: {
     AWS_BUCKET_NAME: string;
     AWS_REGION: string;
 };
-//# sourceMappingURL=config.d.ts.map
