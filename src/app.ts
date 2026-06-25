@@ -19,10 +19,25 @@ const app = express();
 // MIDDLEWARES 
 
 app.use(helmet());
+const allowedOrigins = [
+  config.FRONTEND_URL,
+  config.FRONTEND_URL?.replace(/\/$/, ''), // sans slash final
+  'http://localhost:3000',
+].filter(Boolean);
+
 app.use(cors({
-  origin: config.FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Autorise les requêtes sans origin 
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    console.warn(`CORS rejeté pour origin: ${origin}`);
+    return callback(new Error('Not allowed by CORS'), false);
+  },
   credentials: true,
 }));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
