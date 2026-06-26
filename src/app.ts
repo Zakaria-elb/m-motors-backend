@@ -25,11 +25,17 @@ const allowedOrigins = [
   'http://localhost:3000',
 ].filter(Boolean);
 
+const allowedOrigins = [
+  config.FRONTEND_URL,
+  config.FRONTEND_URL?.replace(/\/$/, ''),
+  'http://localhost:3000',
+  /^https:\/\/m-motors-frontend.*\.vercel\.app$/,
+].filter(Boolean);
+
 app.use(cors({
   origin: (origin, callback) => {
-    // Autorise les requêtes sans origin 
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.some(o => o instanceof RegExp ? o.test(origin) : o === origin)) {
       return callback(null, true);
     }
     console.warn(`CORS rejeté pour origin: ${origin}`);
@@ -37,6 +43,7 @@ app.use(cors({
   },
   credentials: true,
 }));
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
