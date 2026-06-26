@@ -5,80 +5,65 @@ import { authenticateToken, requireRole, AuthenticatedRequest } from '../middlew
 const router = Router();
 const prisma = new PrismaClient();
 
-// GET /admin/dossiers
+// GET /admin/dossiers  tt 
 router.get('/dossiers', authenticateToken, requireRole('ADMIN'), async (req, res) => {
   try {
-    const { status } = req.query;
-    
-    const where: any = {};
-    if (status) where.status = status as string;
-
     const dossiers = await prisma.dossier.findMany({
-      where,
       include: {
         vehicle: true,
-        user: { select: { id: true, email: true, firstName: true, lastName: true } },
+        user: {
+          select: { id: true, email: true, firstName: true, lastName: true },
+        },
+        documents: true, 
+        history: { orderBy: { createdAt: 'asc' } },
       },
       orderBy: { createdAt: 'desc' },
     });
-    
     res.json(dossiers);
   } catch (error) {
+    console.error('Erreur GET /admin/dossiers:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
 
-
-// PATCH /admin/dossiers/status 
+// PATCH /admin/dossiers/:id/status =>  changement de statut 
 router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res) => {
   try {
     const { status, comment } = req.body;
 
-    // Récupérer  statut 
-    const oldDossier = await prisma.dossier.findUnique({
+    // l'ancien statut  
+    const existing = await prisma.dossier.findUnique({
       where: { id: req.params.id as string },
-      include: { user: { select: { email: true, firstName: true, lastName: true } }, vehicle: true }
     });
+    if (!existing) return res.status(404).json({ message: 'Dossier introuvable' });
 
-    if (!oldDossier) return res.status(404).json({ message: 'Dossier introuvable' });
-
-    const oldStatus = oldDossier.status;
-    const newStatus = status as string;
-
-    // Màj  du dossier
-    const updated = await prisma.dossier.update({
+    const dossier = await prisma.dossier.update({
       where: { id: req.params.id as string },
       data: {
-        status: newStatus as any,
-        adminComment: comment || null,
+        status,
+        adminComment: comment || undefined,
       },
+      include: { vehicle: true, user: true, documents: true },
     });
 
-    // Historiquede 
     await prisma.dossierHistory.create({
       data: {
-        dossierId: updated.id,
-        oldStatus: oldStatus,
-        newStatus: newStatus as any,
+        dossierId: dossier.id,
+        oldStatus: existing.status,
+        newStatus: status,
         changedBy: req.user!.id,
-        comment: comment || null,
+        comment: comment || undefined,
       },
     });
 
-    // Simulation envoi notification 
-    console.log(`📧 [NOTIFICATION EMAIL] À: ${oldDossier.user.email} | Dossier ${updated.id} passé de ${oldStatus} → ${newStatus} | Commentaire: ${comment || 'Aucun'}`);
+    // Notification 
+    console.log(`[NOTIFICATION EMAIL] À: ${dossier.user.email} | Dossier ${dossier.id} passé de ${existing.status} → ${status} | Commentaire: ${comment || 'Aucun'}`);
 
-    // Retourner le dossier 
-    res.json({
-      ...updated,
-      vehicle: oldDossier.vehicle,
-      user: oldDossier.user,
-    });
+    res.json(dossier);
   } catch (error) {
-    console.error('❌ ERREUR PATCH admin/dossiers/:id/status:', error);
+    console.error('Erreur PATCH /admin/dossiers/:id/status:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
-
 
 export default router;

@@ -80,7 +80,7 @@ describe('Documents', () => {
 
     expect(res.status).toBe(500);
   });
-  it('POST /documents retourne 500 si dossierId manquant', async () => {
+  it('POST /documents retourne 500 si Id manquant', async () => {
     const client = await createClient();
     const tempPdfPath = path.join(__dirname, 'test-file.pdf');
 

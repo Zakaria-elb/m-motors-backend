@@ -4,11 +4,14 @@ import { execSync } from 'child_process';
 const prisma = new PrismaClient();
 
 beforeAll(async () => {
-  // Reset la base une seule fois au début de la suite globale
   execSync('npx prisma migrate reset --force --skip-seed', {
     env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL },
     stdio: 'pipe',
   });
+});
+
+afterAll(async () => {
+  await prisma.$disconnect();
 });
 
 beforeEach(async () => {

@@ -53,7 +53,7 @@ describe('Appointments', () => {
     expect(res.body.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('GET /appointments/admin retourne tous les rdv (admin)', async () => {
+  it('GET /appointments/admin retourne tous les rdv ', async () => {
     const admin = await createAdmin();
     const res = await request(app)
       .get('/appointments/admin')
@@ -102,7 +102,7 @@ describe('Appointments', () => {
 
     expect(res.status).toBe(400);
   });
-  it('POST /appointments refuse un véhicule inexistant', async () => {
+  it('POST /appointments refuse en cas de  véhicule inexistant', async () => {
     const client = await createClient();
     const res = await request(app)
       .post('/appointments')

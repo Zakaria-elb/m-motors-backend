@@ -57,6 +57,7 @@ app.use('/dossiers', dossierRoutes);
 app.use('/documents', documentRoutes);
 app.use('/admin', adminRoutes);
 app.use('/appointments', appointmentRoutes);
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 
 

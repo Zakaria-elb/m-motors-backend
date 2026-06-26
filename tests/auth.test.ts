@@ -14,7 +14,7 @@ describe('Auth', () => {
     expect(res.body.user.role).toBe('CLIENT');
   });
 
-  it('POST /auth/register refuse un email dupliqué', async () => {
+  it('POST /auth/register refuse un email qui existe deja', async () => {
     await request(app).post('/auth/register').send({
       email: 'duplicate@example.com',
       password: 'Password123',
@@ -83,7 +83,7 @@ describe('Auth', () => {
     });
     expect(res.status).toBe(400);
   });
-  it('POST /auth/register retourne 500 si mot de passe manquant', async () => {
+  it('POST /auth/register retourne 500 si mdp manquant', async () => {
     const res = await request(app).post('/auth/register').send({
       email: 'nopassword@example.com',
       firstName: 'No',

@@ -13,7 +13,11 @@ export async function createClient() {
     firstName: 'Client',
     lastName: 'Test',
   });
-  return { token: res.body.access_token, userId: res.body.user.id, email };
+  return {
+    token: res.body.access_token,
+    userId: res.body.user.id,
+    email,
+  };
 }
 
 export async function createAdmin() {
@@ -35,9 +39,12 @@ export async function createAdmin() {
     password: 'AdminPass123!',
   });
 
-  return { token: res.body.access_token, userId: res.body.user.id, email };
+  return {
+    token: res.body.access_token,
+    userId: res.body.user.id,
+    email,
+  };
 }
-
 
 export async function createVehicle(token: string, overrides: any = {}) {
   const res = await request(app)
@@ -52,6 +59,7 @@ export async function createVehicle(token: string, overrides: any = {}) {
     .field('status', overrides.status || 'A_VENDRE')
     .field('type', overrides.type || 'LES_DEUX')
     .field('description', overrides.description || 'Véhicule test');
+
   return res.body;
 }
 
@@ -60,5 +68,6 @@ export async function createDossier(token: string, vehicleId: string, type = 'AC
     .post('/dossiers')
     .set('Authorization', `Bearer ${token}`)
     .send({ vehicleId, type });
+
   return res.body;
 }
