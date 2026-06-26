@@ -5,7 +5,7 @@ import { authenticateToken, requireRole, AuthenticatedRequest } from '../middlew
 const router = Router();
 const prisma = new PrismaClient();
 
-// GET /admin/dossiers  tt 
+// GET /admin/dossiers — tous les dossiers avec véhicule, client, documents et historique
 router.get('/dossiers', authenticateToken, requireRole('ADMIN'), async (req, res) => {
   try {
     const dossiers = await prisma.dossier.findMany({
@@ -14,7 +14,7 @@ router.get('/dossiers', authenticateToken, requireRole('ADMIN'), async (req, res
         user: {
           select: { id: true, email: true, firstName: true, lastName: true },
         },
-        documents: true, 
+        documents: true, // ← INDISPENSABLE
         history: { orderBy: { createdAt: 'asc' } },
       },
       orderBy: { createdAt: 'desc' },
@@ -26,12 +26,11 @@ router.get('/dossiers', authenticateToken, requireRole('ADMIN'), async (req, res
   }
 });
 
-// PATCH /admin/dossiers/:id/status =>  changement de statut 
+// PATCH /admin/dossiers/:id/status — changement de statut + historique
 router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), async (req: AuthenticatedRequest, res) => {
   try {
     const { status, comment } = req.body;
 
-    // l'ancien statut  
     const existing = await prisma.dossier.findUnique({
       where: { id: req.params.id as string },
     });
@@ -56,7 +55,6 @@ router.patch('/dossiers/:id/status', authenticateToken, requireRole('ADMIN'), as
       },
     });
 
-    // Notification 
     console.log(`[NOTIFICATION EMAIL] À: ${dossier.user.email} | Dossier ${dossier.id} passé de ${existing.status} → ${status} | Commentaire: ${comment || 'Aucun'}`);
 
     res.json(dossier);
