@@ -21,23 +21,22 @@ const app = express();
 app.use(helmet());
 const allowedOrigins = [
   config.FRONTEND_URL,
-  config.FRONTEND_URL?.replace(/\/$/, ''), // sans slash final
-  'http://localhost:3000',
-].filter(Boolean);
-
-const allowedOrigins = [
-  config.FRONTEND_URL,
   config.FRONTEND_URL?.replace(/\/$/, ''),
   'http://localhost:3000',
-  /^https:\/\/m-motors-frontend.*\.vercel\.app$/,
-].filter(Boolean);
+].filter((o): o is string => Boolean(o));
 
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.some(o => o instanceof RegExp ? o.test(origin) : o === origin)) {
+
+    const isAllowed =
+      allowedOrigins.includes(origin) ||
+      /^https:\/\/m-motors-frontend.*\.vercel\.app$/.test(origin);
+
+    if (isAllowed) {
       return callback(null, true);
     }
+
     console.warn(`CORS rejeté pour origin: ${origin}`);
     return callback(new Error('Not allowed by CORS'), false);
   },
