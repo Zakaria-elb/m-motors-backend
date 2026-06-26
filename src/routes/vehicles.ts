@@ -165,14 +165,48 @@ router.post('/', upload.single('image'), async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    await prisma.vehicle.delete({
-      where: { id: req.params.id },
+    await prisma.$transaction(async (tx) => {
+      // 1. Récupérer les dossiers liés à ce véhicule
+      const dossiers = await tx.dossier.findMany({
+        where: { vehicleId: req.params.id },
+        select: { id: true },
+      });
+
+      const dossierIds = dossiers.map((d) => d.id);
+
+      // 2. Supprimer les documents de ces dossiers
+      await tx.document.deleteMany({
+        where: { dossierId: { in: dossierIds } },
+      });
+
+      // 3. Supprimer l'historique de ces dossiers
+      await tx.dossierHistory.deleteMany({
+        where: { dossierId: { in: dossierIds } },
+      });
+
+      // 4. Supprimer les dossiers liés au véhicule
+      await tx.dossier.deleteMany({
+        where: { vehicleId: req.params.id },
+      });
+
+      // 5. Supprimer les rendez-vous liés au véhicule
+      await tx.appointment.deleteMany({
+        where: { vehicleId: req.params.id },
+      });
+
+      // 6. Supprimer le véhicule
+      await tx.vehicle.delete({
+        where: { id: req.params.id },
+      });
     });
-    res.json({ message: 'Véhicule supprimé' });
+
+    res.json({ message: 'Véhicule et données associées supprimés' });
   } catch (error) {
+    console.error('Erreur DELETE vehicle:', error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 });
+
 
 
 // PATCH /vehicles/:id/bascule
