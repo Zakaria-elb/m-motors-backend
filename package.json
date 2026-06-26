@@ -7,7 +7,7 @@
   "dev": "ts-node src/app.ts",
   "build": "tsc",
   "start": "node dist/app.js",
-  "render-build": "rm -rf dist && npm install && npm run build && npx prisma generate && npx prisma migrate deploy",
+ "render-build": "rm -rf dist && npm install --include=dev && npm run build && npx prisma generate && npx prisma migrate deploy",
   "test": "NODE_ENV=test dotenv -e .env.test -- jest --coverage --runInBand",
   "test:watch": "NODE_ENV=test dotenv -e .env.test -- jest --watch"
 }
